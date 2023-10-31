@@ -1,0 +1,34 @@
+@keyframes stars {
+    0%, 100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(100vh);
+    }
+  }
+  
+  @keyframes lights {
+    0%, 100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(100vh);
+    }
+  }
+  
+  .stars {
+    color:red;
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    background: #fff;
+    animation: stars 8s linear infinite;
+  }
+  
+  .lights {
+    position: absolute;
+    width: 2px;
+    height: 2px;
+    background: #f0f;
+    animation: lights 5s linear infinite;
+  }
