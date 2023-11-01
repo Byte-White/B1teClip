@@ -176,7 +176,7 @@ export default function Clipboard() {
               <br />
               <a>{document.data().data}</a>
               <div className="absolute right-4 bottom-4">
-                <button className="bg-green-500 text-white px-2 py-1 rounded-md mr-2" onClick={()=>{navigator.clipboard.writeText(document.data)}}>
+                <button className="bg-green-500 text-white px-2 py-1 rounded-md mr-2" onClick={()=>{navigator.clipboard.writeText(document.data().data)}}>
                 <FontAwesomeIcon icon={['far', 'copy']} />
                 </button>
                 <button className="bg-red-500 text-white px-2 py-1 rounded-md" onClick={
