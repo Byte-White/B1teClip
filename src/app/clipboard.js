@@ -2,11 +2,13 @@
 import React, { useState, useEffect } from 'react';
 
 import { initializeApp } from "firebase/app";
-import {getFirestore,collection,doc,getDoc,getDocs,addDoc,setDoc,deleteDoc, onSnapshot,serverTimestamp} from "firebase/firestore"
+import {getFirestore,collection,doc,getDoc,getDocs,addDoc,setDoc,deleteDoc, onSnapshot,serverTimestamp,query,orderBy} from "firebase/firestore"
+import { getAuth, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
 
 import { library } from '@fortawesome/fontawesome-svg-core';
 import { faCopy } from '@fortawesome/free-regular-svg-icons';
 import { faTrashAlt } from '@fortawesome/free-regular-svg-icons'; // Updated icon import
+import { faArrowRightFromBracket } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 library.add(faCopy);
 //require('dotenv').config()
@@ -36,12 +38,54 @@ export default function Clipboard() {
   const [text, setText] = useState('');
   const [copyState, setCopyState] = useState('Copy');
   const [saveState, setSaveState] = useState('Save to History');
-  const [tab, setTab] = useState(0);
-      
+  const [tab, setTab] = useState(-1);
+  const chooseLogInTab = () => {
+    setTab(-1);
+  }
+  const chooseClipboardTab = () => {
+    setTab(0);
+  }
+  const chooseHistoryTab = () => {
+    setTab(1);
+  }
+
+
+  const [user, setUser] = useState(null);
+  useEffect(() => {
+    const auth = getAuth();
+    auth.onAuthStateChanged((currentUser) => {
+      setUser(currentUser);
+    });
+  }, []);
+
+  const signInWithGoogle = async () => {
+    const provider = new GoogleAuthProvider();
+    try {
+      const auth = getAuth();
+      const result = await signInWithPopup(auth, provider);
+      setUser(result.user);
+      chooseClipboardTab();
+    } catch (error) {
+      console.error('Google Sign-In Error:', error);
+    }
+  };
+
+  const signOut = async () => {
+    try {
+      const auth = getAuth(); // Get the auth service
+      await auth.signOut();
+      setUser(null);
+      chooseLogInTab();
+    } catch (error) {
+      console.error('Sign Out Error:', error);
+    }
+  };
+    
   const [documents, setDocuments] = useState([]);
   const refreshDocs = () =>{
       const fetchData = () => {
-        getDocs(history)
+        const q = query(history, orderBy('createdAt', 'desc'));
+        getDocs(q)
           .then((querySnapshot) => {
             const docs = [];
             querySnapshot.forEach((doc) => {
@@ -132,14 +176,35 @@ export default function Clipboard() {
           });
         }
     }
-    const handleViewHistory = (t) => {
-      setTab(t);
+
+
+    if(tab === -1){ //------------------------LogIn------------------------
+      return(
+        <div className="absolute inset-0 flex items-center flex-col overflow-y-auto bg-black bg-opacity-40">  
+        <button className="bg-blue-500 w-1/2 text-white px-4 py-2 rounded-md" onClick={signInWithGoogle}>
+        SIGN IN WITH GOOGLE
+        </button>
+        </div>
+      )
     }
-    if(tab===0){
+    else if(tab === 0){
     return (//---------------------CLIPBOARD-----------------------------
       <div className="absolute inset-0 flex justify-center items-center">
         <div className="bg-black bg-opacity-40 rounded-lg w-2/3 p-8">
-          <div className="text-white text-3xl text-center mb-4">Clipboard</div>
+          <div className="absolute top-0 right-0 bg-green-600 rounded-lg p-1.5">
+            <img src={user.photoURL} alt="Profile" className="w-16 h-16 rounded-full mb-2" />
+            <div className="text-white font-bold">{user.displayName}</div>
+            <div className="text-gray-300">{user.email}</div>            
+            <button
+              className="bg-red-500 text-white px-2 py-1 rounded-md"
+              onClick={signOut}
+            >
+              <FontAwesomeIcon icon={faArrowRightFromBracket} />
+            </button>
+          </div>
+          <div className="text-white text-3xl text-center mb-4">
+          Clipboard
+          </div>
           
           {/* Text Input */}
           <textarea
@@ -148,7 +213,7 @@ export default function Clipboard() {
             placeholder="Enter text..."
             value={text}
             onChange={(e) => handleChange(e)}
-          ></textarea>
+            ></textarea>
 
           {/* Copy and Save to History Buttons */}
           <div className="flex justify-between mt-4">
@@ -157,18 +222,18 @@ export default function Clipboard() {
           </div>
 
           {/* View History Button */}
-          <button className="bg-blue-500 w-3/5 h-full text-white px-4 py-2 rounded-md mt-4" onClick={()=>handleViewHistory(1)}>History</button>
+          <button className="bg-blue-500 w-3/5 h-full text-white px-4 py-2 rounded-md mt-4" onClick={()=>chooseHistoryTab()}>History</button>
           <button className="bg-red-500 w-2/5 h-full text-white px-4 py-2 rounded-md mt-4" onClick={handleClear}>Clear</button>
         </div>
       </div>
     )
-    }else{//--------------------VIEW HISTORY-------------------------
+    }else if(tab === 1){//--------------------VIEW HISTORY-------------------------
       return(
-          <div className="absolute inset-0 flex items-center flex-col overflow-y-auto">
+        <div className="absolute inset-0 flex items-center flex-col overflow-y-auto">
             <button
               className="absolute top-4 left-4 bg-blue-500 text-white px-2 py-1 rounded-md"
               onClick={() => {
-                setTab(0);
+                chooseClipboardTab();
               }}>Back</button>
             {documents.map((document, index) => (
             <div className="bg-black bg-opacity-40 rounded-lg w-2/3 p-8 relative m-2">
@@ -195,6 +260,13 @@ export default function Clipboard() {
               </div>
             </div>))}
           </div>
+      )
+    }
+    else{
+      return (
+        <div className="absolute inset-0 flex items-center flex-col overflow-y-auto">
+          <h1>Something went wrong.</h1>
+        </div>
       )
     }
   }
