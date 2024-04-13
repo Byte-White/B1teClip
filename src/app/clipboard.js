@@ -210,6 +210,12 @@ export default function Clipboard() {
         ) : (
           <div className="absolute top-0 right-0 bg-green-600 rounded-lg p-1.5">
             (No User)
+            <button
+              className="bg-red-500 text-white px-2 py-1 rounded-md"
+              onClick={chooseLogInTab}
+            >
+              <FontAwesomeIcon icon={faArrowRightFromBracket} />
+            </button>
           </div>
         )}
 
