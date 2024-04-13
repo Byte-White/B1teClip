@@ -184,14 +184,19 @@ export default function Clipboard() {
         <button className="bg-blue-500 w-1/2 text-white px-4 py-2 rounded-md" onClick={signInWithGoogle}>
         SIGN IN WITH GOOGLE
         </button>
+        
+        <button className="bg-gray-500 w-1/2 text-white px-4 py-2 rounded-md" onClick={chooseClipboardTab}>
+        GUEST
+        </button>
         </div>
       )
     }
     else if(tab === 0){
     return (//---------------------CLIPBOARD-----------------------------
-      <div className="absolute inset-0 flex justify-center items-center">
+        <div className="absolute inset-0 flex justify-center items-center">
         <div className="bg-black bg-opacity-40 rounded-lg w-2/3 p-8">
-          <div className="absolute top-0 right-0 bg-green-600 rounded-lg p-1.5">
+        {user ? (
+          <div className="absolute top-0 right-0 bg-green-900 rounded-lg p-1.5">
             <img src={user.photoURL} alt="Profile" className="w-16 h-16 rounded-full mb-2" />
             <div className="text-white font-bold">{user.displayName}</div>
             <div className="text-gray-300">{user.email}</div>            
@@ -202,9 +207,12 @@ export default function Clipboard() {
               <FontAwesomeIcon icon={faArrowRightFromBracket} />
             </button>
           </div>
-          <div className="text-white text-3xl text-center mb-4">
-          Clipboard
+        ) : (
+          <div className="absolute top-0 right-0 bg-green-600 rounded-lg p-1.5">
+            (No User)
           </div>
+        )}
+
           
           {/* Text Input */}
           <textarea
