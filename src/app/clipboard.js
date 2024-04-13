@@ -59,9 +59,17 @@ export default function Clipboard() {
   }, []);
 
   const signInWithGoogle = async () => {
+    const auth = getAuth();
+    
+    // Check if user is already signed in
+    if (auth.currentUser) {
+      setUser(auth.currentUser);
+      chooseClipboardTab();
+      return;
+    }
+  
     const provider = new GoogleAuthProvider();
     try {
-      const auth = getAuth();
       const result = await signInWithPopup(auth, provider);
       setUser(result.user);
       chooseClipboardTab();
@@ -69,6 +77,7 @@ export default function Clipboard() {
       console.error('Google Sign-In Error:', error);
     }
   };
+  
 
   const signOut = async () => {
     try {
